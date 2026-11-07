@@ -1,113 +1,159 @@
 from __future__ import annotations
 
 import json
+import math
 from pathlib import Path
 from typing import Any
 
-import duckdb
 import pandas as pd
 
-from coleta import carregar_configuracao
-
-ROOT = Path(__file__).resolve().parent
-CAMINHO_JSON_PADRAO = (
-    ROOT / "dados" / "originais" / "open_meteo_2024-09-01_2024-09-30.json"
+from coleta import (
+    ROOT,
+    carregar_configuracao,
+    caminhos_dos_dados,
+    validar_configuracao,
 )
-CAMINHO_CSV_TRATADO = ROOT / "dados" / "tratados" / "clima_ipiranga_setembro_2024.csv"
-CAMINHO_QUALIDADE = ROOT / "dados" / "tratados" / "qualidade_dados.json"
-CAMINHO_DUCKDB = ROOT / "dados" / "clima.duckdb"
+
+CAMPOS_API = {
+    "temperature_2m_min": "temperatura_min_c",
+    "temperature_2m_max": "temperatura_max_c",
+    "precipitation_sum": "precipitacao_mm",
+}
 
 
 def transformar_e_validar(
-    caminho_json: Path = CAMINHO_JSON_PADRAO,
+    resposta: dict[str, Any],
+    config: dict[str, Any],
 ) -> tuple[pd.DataFrame, dict[str, Any]]:
-    config = carregar_configuracao()
-    dados_json = json.loads(caminho_json.read_text(encoding="utf-8"))
+    validar_configuracao(config)
 
-    diario = dados_json.get("daily", {})
-    datas = diario.get("time", [])
-    temp_min = diario.get("temperature_2m_min", [])
-    temp_max = diario.get("temperature_2m_max", [])
-    precipitacao = diario.get("precipitation_sum", [])
+    diario = resposta.get("daily")
+    if not isinstance(diario, dict):
+        raise ValueError("O JSON não contém o objeto 'daily'.")
 
-    if not (len(datas) == len(temp_min) == len(temp_max) == len(precipitacao)):
-        raise ValueError("Tamanhos de listas inconsistentes no JSON.")
+    campos_necessarios = ["time", *CAMPOS_API]
+    if any(not isinstance(diario.get(campo), list) for campo in campos_necessarios):
+        raise ValueError("Uma ou mais séries diárias estão ausentes.")
 
-    df = pd.DataFrame(
-        {
-            "data": pd.to_datetime(datas).date,
-            "localidade": config["localidade"],
-            "latitude": float(dados_json["latitude"]),
-            "longitude": float(dados_json["longitude"]),
-            "temperatura_min_c": temp_min,
-            "temperatura_max_c": temp_max,
-            "precipitacao_mm": precipitacao,
-        }
+    quantidade_esperada = 30
+    if any(len(diario[campo]) != quantidade_esperada for campo in campos_necessarios):
+        raise ValueError("As séries não contêm exatamente 30 registros.")
+
+    datas = pd.to_datetime(
+        pd.Series(diario["time"]),
+        format="%Y-%m-%d",
+        errors="raise",
+    )
+    periodo_esperado = pd.date_range(
+        start=config["inicio"],
+        end=config["fim"],
+        freq="D",
     )
 
-    datas_esperadas = pd.date_range(config["inicio"], config["fim"]).date
-    datas_ausentes = sorted(set(datas_esperadas) - set(df["data"]))
-    if datas_ausentes:
-        raise ValueError(f"Datas ausentes na serie: {datas_ausentes}")
+    if datas.isna().any():
+        raise ValueError("A série contém datas ausentes.")
+    if datas.duplicated().any():
+        raise ValueError("A série contém datas duplicadas.")
+    if list(datas) != list(periodo_esperado):
+        raise ValueError("As datas não correspondem ao período configurado.")
 
-    unidades = dados_json.get("daily_units", {})
-    if unidades.get("temperature_2m_min") != "°C":
-        raise ValueError("Unidade de temperatura minima invalida.")
-    if unidades.get("temperature_2m_max") != "°C":
-        raise ValueError("Unidade de temperatura maxima invalida.")
+    unidades = resposta.get("daily_units", {})
+    for campo in ("temperature_2m_min", "temperature_2m_max"):
+        if unidades.get(campo) not in ("°C", "C"):
+            raise ValueError(f"Unidade de temperatura inválida: {campo}.")
     if unidades.get("precipitation_sum") != "mm":
-        raise ValueError("Unidade de precipitacao invalida.")
+        raise ValueError("A precipitação deve estar expressa em milímetros.")
 
-    if (df["temperatura_min_c"] > df["temperatura_max_c"]).any():
-        raise ValueError("Existe registro com temperatura minima maior que a maxima.")
-    if (df["precipitacao_mm"] < 0).any():
-        raise ValueError("Existe registro com precipitacao negativa.")
+    if resposta.get("timezone") != config["timezone"]:
+        raise ValueError("O fuso horário retornado pela API é diferente do configurado.")
 
-    inconsistencias_temp = df[
-        (df["temperatura_min_c"] < -10)
-        | (df["temperatura_min_c"] > 45)
-        | (df["temperatura_max_c"] < -10)
-        | (df["temperatura_max_c"] > 45)
+    dados = pd.DataFrame(
+        {campo: diario[campo] for campo in campos_necessarios}
+    ).rename(columns={"time": "data", **CAMPOS_API})
+    dados["data"] = datas.dt.date
+
+    quantidade_nulos: dict[str, int] = {}
+    for campo in CAMPOS_API.values():
+        valores_originais = dados[campo].copy()
+        dados[campo] = pd.to_numeric(valores_originais, errors="coerce")
+
+        conversoes_invalidas = valores_originais.notna() & dados[campo].isna()
+        if conversoes_invalidas.any():
+            raise ValueError(f"Há valores não numéricos na coluna {campo}.")
+
+        valores_validos = dados[campo].dropna()
+        if not all(math.isfinite(float(valor)) for valor in valores_validos):
+            raise ValueError(f"Há valores infinitos na coluna {campo}.")
+
+        quantidade_nulos[campo] = int(dados[campo].isna().sum())
+
+    minima = dados["temperatura_min_c"]
+    maxima = dados["temperatura_max_c"]
+    precipitacao = dados["precipitacao_mm"]
+
+    if (minima > maxima).fillna(False).any():
+        raise ValueError("Há dias em que a temperatura mínima supera a máxima.")
+    if (precipitacao < 0).fillna(False).any():
+        raise ValueError("A precipitação não pode apresentar valores negativos.")
+
+    for campo in ("temperatura_min_c", "temperatura_max_c"):
+        fora_da_faixa = (dados[campo] < -60) | (dados[campo] > 65)
+        if fora_da_faixa.fillna(False).any():
+            raise ValueError(f"Há valores fora da faixa de controle em {campo}.")
+
+    dados["localidade"] = config["localidade"]
+    dados["latitude"] = float(config["latitude"])
+    dados["longitude"] = float(config["longitude"])
+
+    colunas = [
+        "data",
+        "localidade",
+        "latitude",
+        "longitude",
+        "temperatura_min_c",
+        "temperatura_max_c",
+        "precipitacao_mm",
     ]
-    if not inconsistencias_temp.empty:
-        raise ValueError("Valores de temperatura fora dos limites plausiveis.")
+    dados = dados[colunas]
 
-    inconsistencias_prec = df[df["precipitacao_mm"] > 300]
-    if not inconsistencias_prec.empty:
-        raise ValueError("Valores de precipitacao fora dos limites plausiveis.")
-
-    resumo_qualidade = {
-        "total_registros": len(df),
-        "datas_unicas": df["data"].nunique(),
-        "nulos_temp_min": int(df["temperatura_min_c"].isna().sum()),
-        "nulos_temp_max": int(df["temperatura_max_c"].isna().sum()),
-        "nulos_precipitacao": int(df["precipitacao_mm"].isna().sum()),
-        "dias_com_chuva": int((df["precipitacao_mm"] > 0).sum()),
-        "precipitacao_total_mm": float(df["precipitacao_mm"].sum()),
+    qualidade = {
+        "registros": len(dados),
+        "inicio": str(dados["data"].min()),
+        "fim": str(dados["data"].max()),
+        "datas_duplicadas": int(dados["data"].duplicated().sum()),
+        "dias_faltantes": 0,
+        "cobertura_temporal_pct": 100,
+        "nulos": quantidade_nulos,
+        "inconsistencias": 0,
+        "decisao_sobre_nulos": "Valores ausentes preservados como NULL.",
     }
-
-    return df, resumo_qualidade
+    return dados, qualidade
 
 
 def salvar_dados_tratados(
-    df: pd.DataFrame, resumo: dict[str, Any]
-) -> tuple[Path, Path]:
-    CAMINHO_CSV_TRATADO.parent.mkdir(parents=True, exist_ok=True)
-    df.to_csv(CAMINHO_CSV_TRATADO, index=False)
-    CAMINHO_QUALIDADE.write_text(
-        json.dumps(resumo, indent=2, ensure_ascii=False), encoding="utf-8"
+    dados: pd.DataFrame,
+    qualidade: dict[str, Any],
+) -> None:
+    pasta_dados = ROOT / "dados"
+    pasta_dados.mkdir(parents=True, exist_ok=True)
+
+    dados.to_csv(
+        pasta_dados / "clima_diario_tratado.csv",
+        index=False,
+        encoding="utf-8",
     )
-    return CAMINHO_CSV_TRATADO, CAMINHO_QUALIDADE
+    (pasta_dados / "qualidade.json").write_text(
+        json.dumps(qualidade, ensure_ascii=False, indent=2),
+        encoding="utf-8",
+    )
 
 
-def salvar_no_duckdb(
-    df: pd.DataFrame, caminho_db: Path = CAMINHO_DUCKDB
-) -> tuple[Path, int]:
-    caminho_db.parent.mkdir(parents=True, exist_ok=True)
-    dados = df.copy()
+def carregar_no_duckdb(dados: pd.DataFrame) -> int:
+    import duckdb
 
-    conexao = duckdb.connect(str(caminho_db))
-    try:
+    caminho_banco = ROOT / "dados" / "observatorio.duckdb"
+
+    with duckdb.connect(str(caminho_banco)) as conexao:
         conexao.execute(
             """
             CREATE TABLE IF NOT EXISTS clima_diario (
@@ -148,17 +194,31 @@ def salvar_no_duckdb(
         quantidade = conexao.execute(
             "SELECT COUNT(*) FROM clima_diario"
         ).fetchone()[0]
-    finally:
-        conexao.close()
 
-    return caminho_db, quantidade
+    if quantidade != len(dados):
+        raise RuntimeError(
+            f"Esperados {len(dados)} registros únicos; encontrados {quantidade}."
+        )
+
+    return quantidade
 
 
-def executar() -> tuple[Path, Path, Path, int]:
-    df, resumo = transformar_e_validar()
-    csv_path, json_path = salvar_dados_tratados(df, resumo)
-    db_path, quantidade = salvar_no_duckdb(df)
-    return csv_path, json_path, db_path, quantidade
+def executar() -> None:
+    config = carregar_configuracao()
+    validar_configuracao(config)
+
+    caminho_json, _ = caminhos_dos_dados(config)
+    if not caminho_json.exists():
+        raise FileNotFoundError("Arquivo original ausente. Execute coleta.py primeiro.")
+
+    resposta = json.loads(caminho_json.read_text(encoding="utf-8"))
+    dados, qualidade = transformar_e_validar(resposta, config)
+
+    salvar_dados_tratados(dados, qualidade)
+    quantidade = carregar_no_duckdb(dados)
+
+    print(f"Validação concluída: {qualidade}")
+    print(f"DuckDB atualizado: {quantidade} registros únicos.")
 
 
 if __name__ == "__main__":
