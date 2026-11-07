@@ -43,7 +43,7 @@ Requer Python 3.11 ou superior.
 
 \`\`\`bash
 python -m pip install -r requirements.txt
-python -m unittest discover -s tests -v
+pytest
 python coleta.py
 python banco.py
 python relatorio.py
