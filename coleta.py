@@ -85,7 +85,9 @@ def criar_sessao() -> requests.Session:
     return sessao
 
 
-def coletar_dados(config: dict[str, Any]) -> tuple[bytes, dict[str, Any], str]:
+def coletar_dados(
+    config: dict[str, Any],
+) -> tuple[bytes, dict[str, Any], str, dict[str, Any], int]:
     """Consulta a API e retorna a resposta original, o JSON e a URL."""
     parametros = {
         "latitude": config["latitude"],
@@ -119,7 +121,13 @@ def coletar_dados(config: dict[str, Any]) -> tuple[bytes, dict[str, Any], str]:
     if len(datas) != 30:
         raise ValueError(f"Esperados 30 dias; a API retornou {len(datas)}.")
 
-    return resposta.content, dados, resposta.url
+    return (
+        resposta.content,
+        dados,
+        resposta.url,
+        parametros,
+        resposta.status_code,
+    )
 
 
 def salvar_dados_originais(
@@ -162,23 +170,13 @@ def executar() -> None:
     config = carregar_configuracao()
     validar_configuracao(config)
 
-    conteudo, dados, url = coletar_dados(config)
-    parametros = {
-        "latitude": config["latitude"],
-        "longitude": config["longitude"],
-        "start_date": config["inicio"],
-        "end_date": config["fim"],
-        "daily": ",".join(config["variaveis"]),
-        "timezone": config["timezone"],
-        "temperature_unit": "celsius",
-        "precipitation_unit": "mm",
-    }
+    conteudo, dados, url, parametros, status_http = coletar_dados(config)
 
     salvar_dados_originais(
         conteudo=conteudo,
         url=url,
         parametros=parametros,
-        status_http=200,
+        status_http=status_http,
         config=config,
     )
     print(f"Coleta concluída: {len(dados['daily']['time'])} dias.")

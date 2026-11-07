@@ -200,10 +200,6 @@ def carregar_no_duckdb(dados: pd.DataFrame) -> int:
             "SELECT COUNT(*) FROM clima_diario"
         ).fetchone()[0]
 
-        datas = conexao.execute(
-            "SELECT MIN(data), MAX(data) FROM clima_diario"
-        ).fetchone()
-
     if quantidade != len(dados):
         raise RuntimeError(
             f"Esperados {len(dados)} registros únicos; encontrados {quantidade}."

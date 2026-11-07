@@ -16,7 +16,7 @@ on:
       - '.github/workflows/gerar_relatorio.yml'
 
 concurrency:
-  group: observatorio-ae2-\${{ github.ref }}
+  group: observatorio-ae2-${{ github.ref }}
   cancel-in-progress: false
 
 permissions:
