@@ -2,18 +2,18 @@
   "url": "https://archive-api.open-meteo.com/v1/archive?latitude=-23.59139&longitude=-46.60778&start_date=2026-09-01&end_date=2026-09-30&daily=temperature_2m_min%2Ctemperature_2m_max%2Cprecipitation_sum&timezone=America%2FSao_Paulo&temperature_unit=celsius&precipitation_unit=mm",
   "status_code": 200,
   "headers": {
-    "Date": "Sat, 07 Nov 2026 06:11:34 GMT",
+    "Date": "Sat, 07 Nov 2026 06:48:51 GMT",
     "Content-Type": "application/json; charset=utf-8",
     "Transfer-Encoding": "chunked",
     "Connection": "keep-alive",
     "X-RateLimit-Cost": "1.0",
     "X-RateLimit-Limit": "600.0",
     "X-RateLimit-Remaining": "599.0",
-    "X-RateLimit-Reset": "1794031954",
+    "X-RateLimit-Reset": "1794034191",
     "X-RateLimit-Window": "60",
     "Content-Encoding": "deflate"
   },
-  "coletado_em": "2026-11-07T06:11:34.299879+00:00",
+  "coletado_em": "2026-11-07T06:48:51.526440+00:00",
   "parametros": {
     "latitude": -23.59139,
     "longitude": -46.60778,
