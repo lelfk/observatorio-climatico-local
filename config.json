@@ -1,0 +1,12 @@
+{
+  "projeto": "Observatório Climático Local - Ipiranga/SP",
+  "localidade": "Ipiranga, São Paulo/SP",
+  "latitude": -23.59139,
+  "longitude": -46.60778,
+  "inicio": "2026-09-01",
+  "fim": "2026-09-30",
+  "timezone": "America/Sao_Paulo",
+  "variaveis": ["temperature_2m_min", "temperature_2m_max", "precipitation_sum"],
+  "publico": "Moradores, estudantes e educadores do Ipiranga",
+  "observacao": "Recorte proposto a partir da Aula 1; a AE1 individual não foi localizada."
+}
