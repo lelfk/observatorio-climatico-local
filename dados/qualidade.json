@@ -11,5 +11,5 @@
     "precipitacao_mm": 0
   },
   "inconsistencias": 0,
-  "decisao_sobre_nulos": "Preservados como NULL; não substituir por zero."
+  "decisao_sobre_nulos": "Valores ausentes preservados como NULL."
 }
