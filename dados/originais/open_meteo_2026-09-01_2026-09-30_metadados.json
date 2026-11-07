@@ -12,9 +12,9 @@
     "temperature_unit": "celsius",
     "precipitation_unit": "mm"
   },
-  "coletado_em_utc": "2026-11-07T05:43:15.989428+00:00",
+  "coletado_em_utc": "2026-11-07T06:08:09.818138+00:00",
   "status_http": 200,
   "arquivo": "dados/originais/open_meteo_2026-09-01_2026-09-30.json",
-  "sha256": "c31257ab9d032cc9fec6743c2ea3da13eddf2f345de106c82d261a8bddda4a9e",
+  "sha256": "28a4ff106bb40d27536c58d19f97dd74acf7c6182d5cccab9eecca439ba97e8d",
   "natureza": "Dados históricos baseados em modelos e/ou reanálise; não representam necessariamente medições de uma estação local."
 }
