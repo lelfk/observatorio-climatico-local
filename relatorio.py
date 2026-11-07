@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import hashlib
 import json
 from pathlib import Path
 from typing import Any
@@ -432,6 +433,19 @@ def gerar_relatorio(
         "em dados/evidencias/consultas_sql.txt."
     )
 
+    if indicadores["dias_com_dado_precipitacao"] < len(serie):
+        paragrafo(
+            f"<b>Cobertura da chuva:</b> {indicadores['dias_com_dado_precipitacao']} "
+            f"de {len(serie)} dias com dados. O acumulado informado é parcial.",
+            "NotaProjeto",
+        )
+    if indicadores["dias_termicos_validos"] < len(serie):
+        paragrafo(
+            f"<b>Cobertura térmica:</b> {indicadores['dias_termicos_validos']} "
+            f"de {len(serie)} dias com pares válidos para a média aproximada.",
+            "NotaProjeto",
+        )
+
     secao("8. Critérios de sucesso e interpretação")
     paragrafo(
         "A base contém 30 registros únicos, com cobertura integral do período "
@@ -490,6 +504,10 @@ def executar() -> None:
             )
 
     metadados = json.loads(caminho_metadados.read_text(encoding="utf-8"))
+    hash_esperado = metadados.get("sha256")
+    hash_observado = hashlib.sha256(caminho_json.read_bytes()).hexdigest()
+    if not hash_esperado or hash_observado != hash_esperado:
+        raise ValueError("Integridade do JSON original não verificada: SHA-256 divergente ou ausente.")
     qualidade = json.loads(caminho_qualidade.read_text(encoding="utf-8"))
 
     serie, resultados = carregar_resultados(caminho_banco)
