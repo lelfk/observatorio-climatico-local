@@ -1,12 +1,10 @@
 
 import copy
-import hashlib
 import unittest
-import json
 from datetime import date, timedelta
 
 from banco import transformar_e_validar
-from coleta import carregar_configuracao, salvar_dados_originais, validar_configuracao
+from coleta import carregar_configuracao, validar_configuracao
 
 
 def criar_amostra():
@@ -162,6 +160,26 @@ class TestValidacaoDosDados(unittest.TestCase):
             "598ce6f82cbdd63b11fe4247cef8eb742c484d67b0af31d2ec5ec9954076052" if False
             else hashlib.sha256(payload).hexdigest(),
         )
+
+    def test_aceita_coordenadas_da_grade_proxima(self):
+        resposta = copy.deepcopy(self.resposta)
+        resposta["latitude"] = self.config["latitude"] + 0.01
+        resposta["longitude"] = self.config["longitude"] + 0.02
+        dados, _ = transformar_e_validar(resposta, self.config)
+        self.assertEqual(len(dados), 30)
+
+    def test_rejeita_grade_meteorologica_distante(self):
+        resposta = copy.deepcopy(self.resposta)
+        resposta["latitude"] = 10.0
+        resposta["longitude"] = 10.0
+        with self.assertRaises(ValueError):
+            transformar_e_validar(resposta, self.config)
+
+    def test_rejeita_coordenadas_incompletas(self):
+        resposta = copy.deepcopy(self.resposta)
+        resposta["latitude"] = self.config["latitude"]
+        with self.assertRaises(ValueError):
+            transformar_e_validar(resposta, self.config)
 
 
 if __name__ == "__main__":
