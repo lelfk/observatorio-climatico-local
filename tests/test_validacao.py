@@ -1,4 +1,3 @@
-"""Testes automatizados das regras de validação dos dados."""
 
 import copy
 import unittest
