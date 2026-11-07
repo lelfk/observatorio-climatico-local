@@ -53,6 +53,8 @@ A chave primária `data` impede duplicidade no escopo de uma localidade. A carga
 | Checagem | Campos | Regra objetiva | Tratamento |
 | --- | --- | --- | --- |
 | Estrutura | `daily`, `daily_units` | Objeto diário e séries esperadas presentes | Bloquear carga e revisar resposta |
+| Integridade | JSON original, metadados | SHA-256 do arquivo igual ao registrado na coleta | Impedir processamento e repetir a coleta |
+| Coerência espacial | Latitude e longitude da API | Coordenadas finitas e diferença de até 0,25° em cada eixo em relação à configuração | Investigar grade ou configuração |
 | Obrigatoriedade | `data`, `localidade`, `latitude`, `longitude` | Não nulos; coordenadas válidas | Corrigir configuração ou rejeitar |
 | Datas | `data` | ISO 8601 e dentro do período | Rejeitar registros inválidos |
 | Cobertura | `data` | Exatamente 30 dias consecutivos | Bloquear e investigar ausência |
@@ -62,6 +64,8 @@ A chave primária `data` impede duplicidade no escopo de uma localidade. A carga
 | Temperaturas | `temperatura_min_c`, `temperatura_max_c` | Mínima ≤ máxima; triagem -60 a 65 °C | Bloquear inconsistência; revisar extremos |
 | Precipitação | `precipitacao_mm` | Se presente, ≥ 0 | Rejeitar negativos |
 | Ausências | Três variáveis | Contar NULL por variável e por KPI | Não imputar zero; exibir cobertura |
+
+A tolerância espacial permite diferenças entre o ponto solicitado e a grade meteorológica retornada; não atesta a precisão local do modelo.
 
 NULL indica dado ausente; zero de precipitação indica valor informado igual a zero. O total com dados incompletos deve ser identificado como parcial.
 
