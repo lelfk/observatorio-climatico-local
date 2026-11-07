@@ -1,10 +1,14 @@
 
 import copy
+import hashlib
+import tempfile
 import unittest
+from pathlib import Path
+from unittest.mock import patch
 from datetime import date, timedelta
 
 from banco import transformar_e_validar
-from coleta import carregar_configuracao, validar_configuracao
+from coleta import carregar_configuracao, salvar_dados_originais, validar_configuracao
 
 
 def criar_amostra():
@@ -154,12 +158,23 @@ class TestValidacaoDosDados(unittest.TestCase):
         self.assertEqual(qualidade["nulos"]["precipitacao_mm"], 1)
 
     def test_sha256_dos_bytes_originais(self):
-        payload = b'{"daily":{}}'
-        self.assertEqual(
-            hashlib.sha256(payload).hexdigest(),
-            "598ce6f82cbdd63b11fe4247cef8eb742c484d67b0af31d2ec5ec9954076052" if False
-            else hashlib.sha256(payload).hexdigest(),
-        )
+        conteudo = b'{"daily":{}}'
+        metadados = {"sha256": hashlib.sha256(conteudo).hexdigest()}
+        with tempfile.TemporaryDirectory() as pasta:
+            with patch("coleta.ROOT", Path(pasta)):
+                original, metadados_path = salvar_dados_originais(
+                    conteudo, metadados, self.config
+                )
+                self.assertEqual(original.read_bytes(), conteudo)
+                self.assertTrue(metadados_path.exists())
+
+    def test_rejeita_sha256_incorreto(self):
+        with tempfile.TemporaryDirectory() as pasta:
+            with patch("coleta.ROOT", Path(pasta)):
+                with self.assertRaises(ValueError):
+                    salvar_dados_originais(
+                        b'{"daily":{}}', {"sha256": "incorreto"}, self.config
+                    )
 
     def test_aceita_coordenadas_da_grade_proxima(self):
         resposta = copy.deepcopy(self.resposta)
