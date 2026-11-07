@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import hashlib
 import json
 import math
 from pathlib import Path
@@ -57,7 +58,9 @@ def transformar_e_validar(
     if list(datas) != list(periodo_esperado):
         raise ValueError("As datas não correspondem ao período configurado.")
 
-    unidades = resposta.get("daily_units", {})
+    unidades = resposta.get("daily_units")
+    if not isinstance(unidades, dict):
+        raise ValueError("A resposta não contém unidades diárias válidas.")
     for campo in ("temperature_2m_min", "temperature_2m_max"):
         if unidades.get(campo) not in ("°C", "C"):
             raise ValueError(f"Unidade de temperatura inválida: {campo}.")
@@ -66,6 +69,10 @@ def transformar_e_validar(
 
     if resposta.get("timezone") != config["timezone"]:
         raise ValueError("O fuso horário retornado pela API é diferente do configurado.")
+
+    for campo in CAMPOS_API:
+        if any(isinstance(valor, (str, bool, dict, list)) for valor in diario[campo] if valor is not None):
+            raise ValueError(f"A série {campo} contém tipos inválidos.")
 
     dados = pd.DataFrame(
         {campo: diario[campo] for campo in campos_necessarios}
@@ -207,9 +214,15 @@ def executar() -> None:
     config = carregar_configuracao()
     validar_configuracao(config)
 
-    caminho_json, _ = caminhos_dos_dados(config)
+    caminho_json, caminho_metadados = caminhos_dos_dados(config)
     if not caminho_json.exists():
         raise FileNotFoundError("Arquivo original ausente. Execute coleta.py primeiro.")
+
+    if not caminho_metadados.exists():
+        raise FileNotFoundError("Metadados da coleta ausentes. Execute coleta.py primeiro.")
+    metadados = json.loads(caminho_metadados.read_text(encoding="utf-8"))
+    if hashlib.sha256(caminho_json.read_bytes()).hexdigest() != metadados.get("sha256"):
+        raise ValueError("Falha de integridade: hash SHA-256 do JSON original divergente ou ausente.")
 
     resposta = json.loads(caminho_json.read_text(encoding="utf-8"))
     dados, qualidade = transformar_e_validar(resposta, config)
