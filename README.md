@@ -12,7 +12,7 @@ O projeto utiliza Python, pandas, DuckDB e SQL. A execução automatizada é rea
 | Coordenadas | Latitude -23.59139; longitude -46.60778 |
 | Período | 01 a 30 de setembro de 2026 |
 | Duração | 30 dias consecutivos |
-| Fuso horário | \`America/Sao_Paulo\` |
+| Fuso horário | `America/Sao_Paulo` |
 | Variáveis | Temperatura mínima diária (°C), temperatura máxima diária (°C) e precipitação diária (mm) |
 | Público-alvo | Estudantes e educadores da comunidade escolar do Ipiranga |
 | Fonte | [Open-Meteo Historical Weather API](https://open-meteo.com/en/docs/historical-weather-api) |
@@ -31,27 +31,27 @@ A análise responde a três perguntas:
 
 1. Abra a aba [Actions](https://github.com/lelfk/observatorio-climatico-local/actions).
 2. Selecione **Gerar relatório AE2 (Open-Meteo + DuckDB)**.
-3. Clique em **Run workflow** e confirme a execução na branch \`main\`.
+3. Clique em **Run workflow** e confirme a execução na branch `main`.
 4. Aguarde a conclusão e confira os logs.
-5. Consulte os arquivos gerados no repositório ou na seção Artifacts da execução.
+5. Consulte o PDF, os gráficos e os indicadores na seção Artifacts da execução.
 
-O fluxo executa os testes, coleta os dados, trata e valida a série, atualiza o DuckDB, calcula os indicadores, gera os gráficos e produz o relatório PDF.
+O fluxo executa os testes, coleta os dados, trata e valida a série, atualiza o DuckDB, calcula os indicadores, gera os gráficos e produz o relatório PDF. Os resultados gerados são armazenados temporariamente como artefatos por sete dias, sem commits automáticos. Os arquivos já versionados anteriormente permanecem disponíveis no histórico.
 
 ## Executar localmente
 
 Requer Python 3.11 ou superior.
 
-\`\`\`bash
+```bash
 python -m pip install -r requirements.txt
-pytest
+python -m unittest discover -s tests -v
 python coleta.py
 python banco.py
 python relatorio.py
-\`\`\`
+```
 
 ## Estrutura
 
-\`\`\`text
+```text
 .github/workflows/gerar_relatorio.yml   automação do processamento
 config.json                              localidade, período e variáveis
 coleta.py                                coleta e preservação do JSON original
@@ -64,13 +64,13 @@ dados/originais/                         resposta original e metadados
 dados/                                   CSV tratado, qualidade e banco DuckDB
 dados/evidencias/                        resultados SQL, amostra e gráficos
 docs/escopo-1/AE2/                       relatório final
-\`\`\`
+```
 
 ## Banco de dados
 
-A tabela \`clima_diario\` possui \`data DATE\` como chave primária e armazena localidade, coordenadas, temperatura mínima, temperatura máxima e precipitação.
+A tabela `clima_diario` possui `data DATE` como chave primária e armazena localidade, coordenadas, temperatura mínima, temperatura máxima e precipitação.
 
-A carga utiliza \`INSERT ... ON CONFLICT(data) DO UPDATE\`, permitindo executar o processo novamente sem duplicar as datas.
+A carga utiliza `INSERT ... ON CONFLICT(data) DO UPDATE`, permitindo executar o processo novamente sem duplicar as datas.
 
 ## Validação
 
@@ -82,13 +82,19 @@ O processamento verifica:
 - Valores numéricos e infinitos.
 - Temperatura mínima superior à máxima.
 - Precipitação negativa.
-- Valores ausentes, preservados como \`NULL\`.
+- Valores ausentes, preservados como `NULL`.
+- Integridade SHA-256 do JSON original antes da carga e do relatório.
+- Coordenadas finitas, fuso válido, variáveis sem duplicidade e valores estritamente numéricos.
 
 Os testes automatizados utilizam dados sintéticos exclusivamente para verificar essas regras. Eles não são utilizados no cálculo dos indicadores do relatório.
 
 ## Limitações
 
 Os dados históricos da Open-Meteo são baseados em modelos e/ou reanálise e não correspondem necessariamente a medições realizadas por uma estação meteorológica instalada no Ipiranga. O intervalo de 30 dias permite descrever o período analisado, mas não sustenta conclusões sobre tendências climáticas de longo prazo. Dados históricos não constituem previsão meteorológica.
+
+## Publicação e segurança
+
+O workflow usa permissão de leitura no repositório. Os artefatos de execução excluem JSON original, metadados HTTP e banco DuckDB; não há publicação automática de commits. Os arquivos gerados e já presentes em commits anteriores continuam versionados e não são removidos pela configuração atual.
 
 ## Fontes
 
