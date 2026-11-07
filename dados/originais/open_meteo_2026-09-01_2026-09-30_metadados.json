@@ -1,7 +1,19 @@
 {
-  "fonte": "Open-Meteo Historical Weather API",
-  "endpoint": "https://archive-api.open-meteo.com/v1/archive",
   "url": "https://archive-api.open-meteo.com/v1/archive?latitude=-23.59139&longitude=-46.60778&start_date=2026-09-01&end_date=2026-09-30&daily=temperature_2m_min%2Ctemperature_2m_max%2Cprecipitation_sum&timezone=America%2FSao_Paulo&temperature_unit=celsius&precipitation_unit=mm",
+  "status_code": 200,
+  "headers": {
+    "Date": "Sat, 07 Nov 2026 06:11:34 GMT",
+    "Content-Type": "application/json; charset=utf-8",
+    "Transfer-Encoding": "chunked",
+    "Connection": "keep-alive",
+    "X-RateLimit-Cost": "1.0",
+    "X-RateLimit-Limit": "600.0",
+    "X-RateLimit-Remaining": "599.0",
+    "X-RateLimit-Reset": "1794031954",
+    "X-RateLimit-Window": "60",
+    "Content-Encoding": "deflate"
+  },
+  "coletado_em": "2026-11-07T06:11:34.299879+00:00",
   "parametros": {
     "latitude": -23.59139,
     "longitude": -46.60778,
@@ -11,10 +23,5 @@
     "timezone": "America/Sao_Paulo",
     "temperature_unit": "celsius",
     "precipitation_unit": "mm"
-  },
-  "coletado_em_utc": "2026-11-07T06:08:09.818138+00:00",
-  "status_http": 200,
-  "arquivo": "dados/originais/open_meteo_2026-09-01_2026-09-30.json",
-  "sha256": "28a4ff106bb40d27536c58d19f97dd74acf7c6182d5cccab9eecca439ba97e8d",
-  "natureza": "Dados históricos baseados em modelos e/ou reanálise; não representam necessariamente medições de uma estação local."
+  }
 }
