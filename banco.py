@@ -28,6 +28,24 @@ def transformar_e_validar(
 ) -> tuple[pd.DataFrame, dict[str, Any]]:
     validar_configuracao(config)
 
+    latitude_api = resposta.get("latitude")
+    longitude_api = resposta.get("longitude")
+    if (latitude_api is None) != (longitude_api is None):
+        raise ValueError("Coordenadas incompletas na resposta da API.")
+    if latitude_api is not None:
+        try:
+            latitude_api = float(latitude_api)
+            longitude_api = float(longitude_api)
+        except (TypeError, ValueError) as erro:
+            raise ValueError("Coordenadas inválidas na resposta da API.") from erro
+        if not math.isfinite(latitude_api) or not math.isfinite(longitude_api):
+            raise ValueError("Coordenadas não finitas na resposta da API.")
+        if (
+            abs(latitude_api - float(config["latitude"])) > 0.25
+            or abs(longitude_api - float(config["longitude"])) > 0.25
+        ):
+            raise ValueError("A grade da API está distante da localidade configurada.")
+
     diario = resposta.get("daily")
     if not isinstance(diario, dict):
         raise ValueError("O JSON não contém o objeto 'daily'.")
