@@ -95,3 +95,9 @@ Os dados históricos da Open-Meteo são baseados em modelos e/ou reanálise e n�
 - [Open-Meteo Historical Weather API](https://open-meteo.com/en/docs/historical-weather-api)
 - [DuckDB](https://duckdb.org/docs/stable/)
 - [GitHub Actions](https://docs.github.com/en/actions)
+
+## AE2-2 | Desenho da solução
+
+O planejamento técnico, o dicionário de dados, as regras de qualidade, os indicadores e o wireframe do dashboard estão em [docs/escopo-1/AE2-2/planejamento.md](docs/escopo-1/AE2-2/planejamento.md).
+
+O Streamlit permanece planejado. A implementação existente de coleta, validação e relatório da AE2 foi preservada.
