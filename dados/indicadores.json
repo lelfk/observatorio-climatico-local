@@ -1,0 +1,18 @@
+{
+  "fonte": "Open-Meteo Historical Weather API",
+  "localidade": "Ipiranga, São Paulo/SP",
+  "periodo": [
+    "2026-09-01",
+    "2026-09-30"
+  ],
+  "maior_temperatura_maxima_c": 32.4,
+  "datas_maior_maxima": [
+    "2026-09-29"
+  ],
+  "precipitacao_total_mm": 244.0,
+  "dias_com_chuva": 24,
+  "dias_com_dado_precipitacao": 30,
+  "temperatura_media_aproximada_c": 18.9,
+  "dias_termicos_validos": 30,
+  "amplitude_termica_media_c": 8.6
+}

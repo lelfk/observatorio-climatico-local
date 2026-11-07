@@ -1,0 +1,15 @@
+{
+  "registros": 30,
+  "inicio": "2026-09-01",
+  "fim": "2026-09-30",
+  "datas_duplicadas": 0,
+  "dias_faltantes": 0,
+  "cobertura_temporal_pct": 100,
+  "nulos": {
+    "temperatura_min_c": 0,
+    "temperatura_max_c": 0,
+    "precipitacao_mm": 0
+  },
+  "inconsistencias": 0,
+  "decisao_sobre_nulos": "Preservados como NULL; não substituir por zero."
+}

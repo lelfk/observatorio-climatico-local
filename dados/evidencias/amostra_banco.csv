@@ -1,0 +1,7 @@
+data,localidade,latitude,longitude,temperatura_min_c,temperatura_max_c,precipitacao_mm
+2026-09-01,"Ipiranga, São Paulo/SP",-23.59139,-46.60778,13.6,20.6,21.8
+2026-09-02,"Ipiranga, São Paulo/SP",-23.59139,-46.60778,12.6,21.1,0.2
+2026-09-03,"Ipiranga, São Paulo/SP",-23.59139,-46.60778,11.5,26.1,0.0
+2026-09-04,"Ipiranga, São Paulo/SP",-23.59139,-46.60778,15.8,29.0,0.4
+2026-09-05,"Ipiranga, São Paulo/SP",-23.59139,-46.60778,14.9,22.0,18.6
+2026-09-06,"Ipiranga, São Paulo/SP",-23.59139,-46.60778,10.6,14.9,7.9

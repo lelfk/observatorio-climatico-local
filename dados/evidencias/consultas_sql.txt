@@ -1,0 +1,11 @@
+CONSULTA 1
+      data  maior_temperatura_c
+2026-09-29                 32.4
+
+CONSULTA 2
+ precipitacao_total_mm  dias_com_chuva  dias_com_dado  maior_precipitacao_diaria_mm
+                 244.0              24             30                          38.7
+
+CONSULTA 3
+ temperatura_media_aproximada_c  dias_validos  amplitude_termica_media_c
+                           18.9            30                        8.6
