@@ -1,0 +1,10 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1100" height="140" viewBox="0 0 1100 140">
+<rect width="1100" height="140" fill="#fff"/>
+<g font-family="Arial,sans-serif" font-size="17" text-anchor="middle" fill="#25374a">
+<rect x="10" y="27" width="175" height="85" rx="6" fill="#f6f8fa" stroke="#b6c1c8"/><text x="97" y="62">Open-Meteo</text><text x="97" y="84" font-size="13">API histórica</text>
+<rect x="236" y="27" width="175" height="85" rx="6" fill="#f6f8fa" stroke="#b6c1c8"/><text x="323" y="62">Requests</text><text x="323" y="84" font-size="13">JSON original</text>
+<rect x="462" y="27" width="175" height="85" rx="6" fill="#f6f8fa" stroke="#b6c1c8"/><text x="549" y="62">pandas</text><text x="549" y="84" font-size="13">Validação</text>
+<rect x="688" y="27" width="175" height="85" rx="6" fill="#f6f8fa" stroke="#b6c1c8"/><text x="775" y="62">DuckDB + SQL</text><text x="775" y="84" font-size="13">clima_diario</text>
+<rect x="914" y="27" width="175" height="85" rx="6" fill="#f6f8fa" stroke="#b6c1c8"/><text x="1001" y="62">Streamlit</text><text x="1001" y="84" font-size="13">Planejado</text>
+</g><g stroke="#254b65" stroke-width="2" fill="none"><path d="M185 69H235"/><path d="M411 69H461"/><path d="M637 69H687"/><path d="M863 69H913"/></g><g fill="#254b65"><path d="M235 69l-9 -5v10z"/><path d="M461 69l-9 -5v10z"/><path d="M687 69l-9 -5v10z"/><path d="M913 69l-9 -5v10z"/></g>
+</svg>
