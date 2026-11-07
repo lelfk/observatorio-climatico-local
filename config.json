@@ -7,6 +7,5 @@
   "fim": "2026-09-30",
   "timezone": "America/Sao_Paulo",
   "variaveis": ["temperature_2m_min", "temperature_2m_max", "precipitation_sum"],
-  "publico": "Estudantes e educadores da comunidade escolar do Ipiranga",
-  "observacao": "Recorte documentado com base nos slides e na transcrição da Aula 1 do Projeto Integrador Extensionista 2; sem registro de planejamento individual anterior."
+  "publico": "Estudantes e educadores da comunidade escolar do Ipiranga"
 }

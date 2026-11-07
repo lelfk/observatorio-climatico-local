@@ -1,8 +1,6 @@
 # Observatório Climático Local | Ipiranga, São Paulo/SP
 
-**Projeto Integrador Extensionista 2 (AE2)**, com coleta de dados históricos, controle de qualidade, armazenamento em DuckDB, SQL, indicadores e relatório técnico em PDF. O projeto pode ser executado **inteiramente online pelo GitHub Actions**, sem instalar nada no computador.
-
-> **Planejamento acadêmico:** o escopo foi definido a partir dos slides e da transcrição da **Aula 1 do Projeto Integrador Extensionista 2**. A aula apresenta o Projeto Integrador 1 somente como retrospectiva da disciplina anterior. Como não foi localizado um planejamento individual anterior da AE1, as escolhas feitas agora estão identificadas no [registro de planejamento](docs/escopo-1/AE2/PLANEJAMENTO_RECONSTRUIDO.md), sem atribuí-las a uma entrega prévia.
+Projeto Integrador Extensionista 2 (AE2) com coleta e análise de dados meteorológicos históricos. O processamento utiliza Python, pandas, DuckDB e SQL para gerar indicadores, gráficos e um relatório técnico em PDF. A execução pode ser realizada online pelo GitHub Actions, sem instalação no computador.
 
 ## Escopo
 
@@ -10,79 +8,60 @@
 | --- | --- |
 | Localidade | Ipiranga, São Paulo/SP |
 | Ponto de referência | Latitude -23.59139; longitude -46.60778 |
-| Período | 01 a 30 de setembro de 2026 (30 dias) |
-| Fuso | `America/Sao_Paulo` |
-| Variáveis | Temperaturas mínima/máxima diárias (°C) e precipitação diária (mm) |
-| Beneficiários propostos | Comunidade escolar do Ipiranga: estudantes e educadores (famílias como público indireto) |
-| Fonte | [Open-Meteo Historical Weather API](https://open-meteo.com/en/docs/historical-weather-api) |
+| Período | 01 a 30 de setembro de 2026 |
+| Duração | 30 dias consecutivos |
+| Fuso horário | `America/Sao_Paulo` |
+| Variáveis | Temperatura mínima diária (°C), temperatura máxima diária (°C) e precipitação diária (mm) |
+| Público-alvo | Estudantes e educadores da comunidade escolar do Ipiranga |
+| Fonte de dados | [Open-Meteo Historical Weather API](https://open-meteo.com/en/docs/historical-weather-api) |
 
-**Três perguntas e KPIs:** qual foi a maior temperatura máxima (°C) e sua data? Quanto choveu (mm) e em quantos dias? Qual foi a temperatura média diária aproximada (°C), calculada pela média das semissomas de mínimas e máximas?
+## Objetivo e análise
 
-## Objetivo, necessidade e público
+O projeto organiza dados históricos de temperatura e precipitação de um ponto de referência no Ipiranga. Os resultados permitem observar os dias de maior temperatura, o volume de chuva no período e a variação das temperaturas mínimas e máximas. Os indicadores e gráficos podem apoiar atividades didáticas sobre condições meteorológicas e planejamento de atividades ao ar livre.
 
-**Modalidade:** desenvolvimento individual; repositório mantido pela conta `lelfk`. O professor explicou na Aula 1 que trabalhos individuais são permitidos e, para trabalhos em grupo, cada integrante deve fazer sua entrega.
+A análise responde a três perguntas: qual foi a maior temperatura máxima e em que data ocorreu; quanto choveu no período e em quantos dias houve precipitação; e qual foi a temperatura média diária aproximada, calculada pela média das semissomas das temperaturas mínima e máxima.
 
-**Questão extensionista:** como séries históricas locais podem ajudar estudantes e educadores a compreender episódios de calor e chuva? O produto organiza trinta dias de informações em indicadores e dois gráficos simples, úteis para discussões didáticas retrospectivas, inclusive sobre atividades ao ar livre. A necessidade ainda deve ser confirmada com representantes da comunidade escolar. Nenhuma entrevista, parceria com escola ou devolutiva é apresentada como realizada.
+## Executar pelo GitHub Actions
 
-**Escopo da AE2:** coleta via API, tratamento e validação, uma tabela DuckDB, três perguntas/consultas SQL, três KPIs, dois gráficos e relatório de duas a quatro páginas. O painel Streamlit integra o projeto global apresentado na aula, mas **não é obrigatório nesta entrega AE2** conforme o enunciado específico.
-
-A relação com a transcrição da aula está documentada em [notas da Aula 1](docs/escopo-1/AE2/NOTAS_AULA1.md), inclusive a distinção entre as atividades de estudo deste projeto e o antigo Projeto Integrador 1.
-
-## Executar sem instalar nada
-
-1. Entre na aba [Actions](https://github.com/lelfk/observatorio-climatico-local/actions).
+1. Acesse a aba [Actions](https://github.com/lelfk/observatorio-climatico-local/actions).
 2. Selecione **Gerar relatório AE2 (Open-Meteo + DuckDB)**.
 3. Clique em **Run workflow** e execute na branch `main`.
-4. Aguarde a execução concluir com indicador verde. Confira os logs e a seção de **Artifacts**.
-5. Quando a execução for bem-sucedida, o fluxo também tentará publicar automaticamente no próprio repositório os dados reais, a base DuckDB, os resultados SQL, os gráficos e o relatório PDF em `docs/escopo-1/AE2/Relatorio_AE2_Observatorio_Climatico.pdf`.
+4. Aguarde a conclusão e confira os logs e os artefatos publicados.
+5. O workflow gera os dados tratados, a base DuckDB, os resultados SQL, os gráficos e o relatório PDF em `docs/escopo-1/AE2/Relatorio_AE2_Observatorio_Climatico.pdf`.
 
-O workflow também é iniciado após alterações relevantes no código. Se o GitHub solicitar ativação das Actions ou permissão para escrita, será necessário ajustar as configurações do repositório. **A existência do código não comprova a execução:** verifique o status verde e os arquivos efetivamente gerados.
+O workflow também é iniciado após alterações nos arquivos de código e configuração. A execução bem-sucedida pode ser conferida na aba Actions.
 
-## Arquivos do projeto
+## Estrutura do projeto
 
 ```text
-.github/workflows/gerar_relatorio.yml   automação online e evidências
-config.json                              localização, datas e variáveis
-coleta.py                                requisição Requests, JSON bruto e metadados
-banco.py                                 validação pandas e carga idempotente em DuckDB
-consultas.sql                            três consultas e KPIs
-relatorio.py                             indicadores, gráficos e relatório PDF
-requirements.txt                         bibliotecas necessárias
-.gitignore                               exclusões de segredos/ambiente temporário
-tests/test_validacao.py                  cinco testes sintéticos de validação
-dados/originais/                         JSON sem alteração + metadados UTC/SHA256
-dados/                                   CSV, qualidade, indicadores, DuckDB
-dados/evidencias/                        extrato da tabela, SQL e dois gráficos
-docs/escopo-1/AE2/                       relatório final, planejamento e notas da Aula 1
+.github/workflows/gerar_relatorio.yml   automação de coleta e geração dos resultados
+config.json                              localidade, período e variáveis
+coleta.py                                consulta à API e preservação do JSON original
+banco.py                                 validação dos dados e carga no DuckDB
+consultas.sql                            consultas SQL e indicadores
+relatorio.py                             gráficos e relatório PDF
+requirements.txt                         dependências Python
+tests/test_validacao.py                  testes de validação
+dados/originais/                         resposta original da API e metadados
+dados/                                   dados tratados, indicadores e banco DuckDB
+dados/evidencias/                        resultados SQL, amostra e gráficos
+docs/escopo-1/AE2/                       relatório final em PDF
 ```
 
-Os arquivos sob `dados/` e o PDF final serão produzidos somente após uma execução bem-sucedida. **Valores artificiais são usados exclusivamente nos testes, nunca nos indicadores finais.**
-
-## Executar no Codespaces, opcionalmente
-
-Abra [github.dev](https://github.dev/lelfk/observatorio-climatico-local) para editar via navegador ou crie um Codespace, que permite abrir terminal na nuvem. Na pasta raiz:
-
-```bash
-python -m pip install -r requirements.txt
-python -m unittest discover -s tests -v
-python coleta.py
-python banco.py
-python banco.py
-python relatorio.py
-```
-
-A segunda execução de `banco.py` verifica que não há duplicação de registros. Não é obrigatório usar terminal: prefira o workflow acima.
+Os arquivos de dados e o relatório são atualizados após a execução do workflow. Dados sintéticos são utilizados somente nos testes de validação e não entram no cálculo dos indicadores.
 
 ## Modelagem e validação
 
-A tabela `clima_diario` possui a chave primária `data DATE`; campos de localidade e coordenadas; `temperatura_min_c`, `temperatura_max_c` e `precipitacao_mm` em `DOUBLE`. A carga usa `INSERT ... ON CONFLICT(data) DO UPDATE`, preservando a unicidade ao executar novamente. O pipeline rejeita datas fora do recorte, duplicações, unidades inesperadas, chuva negativa e mínima acima da máxima. Ausências permanecem NULL. São gerados `dados/qualidade.json`, `dados/indicadores.json` e evidências SQL.
+A tabela `clima_diario` utiliza `data DATE` como chave primária e armazena localidade, coordenadas, temperatura mínima, temperatura máxima e precipitação. A carga utiliza `INSERT ... ON CONFLICT(data) DO UPDATE`, evitando duplicação de datas em execuções sucessivas.
 
-## Limites e relevância extensionista
+O processamento verifica o intervalo de datas, registros duplicados, unidades, valores numéricos, temperaturas mínimas superiores às máximas e precipitação negativa. Valores ausentes são preservados como `NULL`. Os resultados da validação ficam registrados em `dados/qualidade.json`.
 
-As séries históricas da Open-Meteo usam dados modelados/reanálise; não são necessariamente medições diretas de uma estação no bairro. Um único mês não caracteriza tendência climática duradoura e **histórico não é previsão**. A utilidade concreta dos resultados para a comunidade escolar deverá ser avaliada em uma etapa de apresentação e feedback ainda não realizada. Nenhum dado pessoal é solicitado ou publicado. A Aula 1 enfatiza a compreensão do problema, a rastreabilidade da origem, a documentação das dificuldades e a comunicação adequada para o público.
+## Limitações
+
+Os dados históricos da Open-Meteo são baseados em modelos e/ou reanálise e não correspondem necessariamente a medições realizadas por uma estação meteorológica instalada no Ipiranga. O período de 30 dias permite descrever as condições observadas nesse intervalo, mas não sustenta conclusões sobre tendências climáticas de longo prazo. Dados históricos também não constituem previsão meteorológica. O projeto não coleta dados pessoais.
 
 ## Fontes
 
 - [Open-Meteo Historical Weather API](https://open-meteo.com/en/docs/historical-weather-api)
-- [DuckDB (documentação)](https://duckdb.org/docs/stable/)
+- [DuckDB](https://duckdb.org/docs/stable/)
 - [GitHub Actions](https://docs.github.com/en/actions)

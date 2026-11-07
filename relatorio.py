@@ -117,9 +117,8 @@ def executar():
         ]))
         sty.append(tab)
     P("OBSERVATÓRIO CLIMÁTICO LOCAL<br/>AE2 | Relatório técnico e analítico", "TituloA")
-    H("1. Contexto, necessidade e continuidade")
-    P("Este projeto organiza registros meteorológicos históricos do Ipiranga, São Paulo/SP, para apoiar a comunidade escolar do território, especialmente estudantes e educadores, na compreensão das oscilações de temperatura e precipitação. O material pode apoiar atividades didáticas sobre episódios passados de chuva e calor, incluindo reflexões sobre atividades ao ar livre. A necessidade concreta e a utilidade da apresentação ainda precisam ser verificadas com representantes desse público.")
-    P("<b>Planejamento e continuidade:</b> a apresentação e a transcrição da Aula 1 do Projeto Integrador Extensionista 2 orientam o escopo e o caráter comunitário. Não foi localizado registro individual prévio da AE1; localidade, público e perguntas são definidos e documentados neste projeto. O Projeto Integrador 1 citado na aula corresponde a uma disciplina anterior, apresentada pelo docente apenas como retrospectiva.")
+    H("1. Contexto e objetivo")
+    P("Este projeto reúne e analisa registros meteorológicos históricos do Ipiranga, São Paulo/SP, com foco em temperatura e precipitação. O objetivo é disponibilizar informações organizadas para apoiar estudantes e educadores da comunidade escolar em atividades didáticas sobre condições meteorológicas, episódios de chuva e calor e planejamento de atividades ao ar livre.")
     H("2. Recorte, questões e indicadores")
     P(f"<b>Localidade:</b> {cfg['localidade']} (latitude {cfg['latitude']}, longitude {cfg['longitude']}). "
       f"<b>Período:</b> {cfg['inicio']} a {cfg['fim']}, 30 dias consecutivos. "
@@ -178,26 +177,23 @@ def executar():
       "As instruções estão disponíveis integralmente em <b>consultas.sql</b>, "
       "e seus resultados tabulares em <b>dados/evidencias/consultas_sql.txt</b>.")
     H("8. Critérios de sucesso e interpretação")
-    P("Os critérios técnicos verificados incluem 30 registros únicos, cobertura integral, unidades coerentes, "
-      "validação de ausências e inconsistências, três consultas SQL, três indicadores e dois gráficos produzidos. "
-      "A coleta automatizada no GitHub Actions retornou HTTP 200 e preservou o JSON de origem, permitindo reprodução. "
+    P("A base contém 30 registros únicos, com cobertura integral do período e unidades coerentes. "
+      "O processamento verifica ausências e inconsistências, executa três consultas SQL e gera três indicadores e dois gráficos. "
+      "A coleta automatizada preserva o JSON original e os metadados da requisição. "
       "A média das semissomas de mínimas e máximas é aproximada e não corresponde à média horária observada.")
-    H("9. Relevância extensionista, ética e limites")
-    P("Os dias de maior calor e precipitação podem ser usados por docentes em atividades retrospectivas "
-      "sobre condições meteorológicas e planejamento escolar. A Aula 1 recomenda ouvir representantes "
-      "do público, sempre que possível, para validar a necessidade e evitar pressuposições. "
-      "Esse contato e a devolutiva ainda não foram realizados; nenhuma entrevista ou avaliação de impacto é atribuída ao projeto. "
-      "Não são coletados dados pessoais nesta etapa; eventual feedback deverá respeitar finalidade e privacidade.")
+    H("9. Aplicação, ética e limites")
+    P("Os indicadores e gráficos podem subsidiar atividades didáticas sobre episódios de calor e precipitação, "
+      "interpretação de séries históricas e planejamento de atividades ao ar livre. A análise é descritiva e "
+      "restrita ao período selecionado. O projeto não coleta dados pessoais.")
     P("A Open-Meteo fornece séries meteorológicas baseadas em modelos/reanálise para um ponto geográfico; "
       "não há comprovação de que os valores sejam observações de estação no Ipiranga. "
       "Um intervalo de 30 dias não permite inferir tendências climáticas multianuais, "
       "e esta análise histórica não constitui previsão meteorológica.")
     H("10. Fontes e reprodutibilidade")
-    P("Open-Meteo: https://open-meteo.com/en/docs/historical-weather-api. "
+    P("Open-Meteo Historical Weather API: https://open-meteo.com/en/docs/historical-weather-api. "
       "DuckDB: https://duckdb.org/docs/stable/. "
-      "Orientação didática: transcrição da Aula 1, Projeto Integrador Extensionista 2 "
-      "(material disponibilizado pelo estudante; síntese em docs/escopo-1/AE2). "
-      "Código, README, JSON original, SQL e evidências: "
+      "GitHub Actions: https://docs.github.com/en/actions. "
+      "Código, dados originais, consultas SQL e evidências: "
       "https://github.com/lelfk/observatorio-climatico-local.")
     def pagina(canvas, documento):
         canvas.saveState()
