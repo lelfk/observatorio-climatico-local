@@ -2,9 +2,11 @@ from __future__ import annotations
 
 import hashlib
 import json
+import math
 from datetime import date, datetime, timezone
 from pathlib import Path
 from typing import Any
+from zoneinfo import ZoneInfo, ZoneInfoNotFoundError
 
 import requests
 from requests.adapters import HTTPAdapter
@@ -46,17 +48,26 @@ def validar_configuracao(config: dict[str, Any]) -> None:
     if fim >= date.today():
         raise ValueError("A data final deve ser anterior à data atual.")
 
-    if set(config["variaveis"]) != VARIAVEIS_ESPERADAS:
+    if not isinstance(config["variaveis"], list) or len(config["variaveis"]) != 3 or set(config["variaveis"]) != VARIAVEIS_ESPERADAS:
         raise ValueError("Configure exatamente as três variáveis previstas no projeto.")
 
-    latitude = float(config["latitude"])
-    longitude = float(config["longitude"])
+    if not isinstance(config["localidade"], str) or not config["localidade"].strip():
+        raise ValueError("Informe uma localidade válida.")
+    try:
+        latitude = float(config["latitude"])
+        longitude = float(config["longitude"])
+    except (TypeError, ValueError) as erro:
+        raise ValueError("As coordenadas devem ser numéricas.") from erro
+    if not math.isfinite(latitude) or not math.isfinite(longitude):
+        raise ValueError("As coordenadas devem ser finitas.")
     if not -90 <= latitude <= 90:
         raise ValueError("Latitude deve estar entre -90 e 90.")
     if not -180 <= longitude <= 180:
         raise ValueError("Longitude deve estar entre -180 e 180.")
-    if not config["timezone"]:
-        raise ValueError("Informe o fuso horário da localidade.")
+    try:
+        ZoneInfo(config["timezone"])
+    except (TypeError, ValueError, KeyError, ZoneInfoNotFoundError) as erro:
+        raise ValueError("Fuso horário inválido.") from erro
 
 
 def caminhos_dos_dados(config: dict[str, Any]) -> tuple[Path, Path]:
@@ -105,10 +116,10 @@ def coletar_dados(
         raise ValueError(f"A resposta da API nao e um JSON valido: {erro}") from erro
 
     metadados = {
-        "url": resposta.url,
-        "status_code": resposta.status_code,
-        "headers": dict(resposta.headers),
-        "coletado_em": datetime.now(timezone.utc).isoformat(),
+        "coletado_em_utc": datetime.now(timezone.utc).isoformat(),
+        "status_http": resposta.status_code,
+        "sha256": hashlib.sha256(resposta.content).hexdigest(),
+        "tamanho_bytes": len(resposta.content),
         "parametros": parametros,
     }
 
@@ -121,6 +132,9 @@ def salvar_dados_originais(
 ) -> tuple[Path, Path]:
     caminho_bruto, caminho_metadados = caminhos_dos_dados(config)
     caminho_bruto.parent.mkdir(parents=True, exist_ok=True)
+
+    if hashlib.sha256(conteudo_bruto).hexdigest() != metadados.get("sha256"):
+        raise ValueError("O hash dos dados originais não corresponde aos metadados.")
 
     caminho_bruto.write_bytes(conteudo_bruto)
     caminho_metadados.write_text(
