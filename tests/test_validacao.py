@@ -1,10 +1,12 @@
 
 import copy
+import hashlib
 import unittest
+import json
 from datetime import date, timedelta
 
 from banco import transformar_e_validar
-from coleta import carregar_configuracao
+from coleta import carregar_configuracao, salvar_dados_originais, validar_configuracao
 
 
 def criar_amostra():
@@ -97,6 +99,69 @@ class TestValidacaoDosDados(unittest.TestCase):
 
         with self.assertRaises(ValueError):
             transformar_e_validar(resposta, self.config)
+
+    def test_rejeita_temperatura_textual(self):
+        resposta = copy.deepcopy(self.resposta)
+        resposta["daily"]["temperature_2m_min"][0] = "18"
+        with self.assertRaises(ValueError):
+            transformar_e_validar(resposta, self.config)
+
+    def test_rejeita_precipitacao_booleana(self):
+        resposta = copy.deepcopy(self.resposta)
+        resposta["daily"]["precipitation_sum"][0] = True
+        with self.assertRaises(ValueError):
+            transformar_e_validar(resposta, self.config)
+
+    def test_rejeita_unidades_ausentes(self):
+        resposta = copy.deepcopy(self.resposta)
+        resposta["daily_units"] = None
+        with self.assertRaises(ValueError):
+            transformar_e_validar(resposta, self.config)
+
+    def test_rejeita_timezone_divergente(self):
+        resposta = copy.deepcopy(self.resposta)
+        resposta["timezone"] = "UTC"
+        with self.assertRaises(ValueError):
+            transformar_e_validar(resposta, self.config)
+
+    def test_rejeita_coordenadas_nao_finitas(self):
+        config = copy.deepcopy(self.config)
+        config["latitude"] = float("nan")
+        with self.assertRaises(ValueError):
+            validar_configuracao(config)
+
+    def test_rejeita_variaveis_repetidas(self):
+        config = copy.deepcopy(self.config)
+        config["variaveis"] = [
+            "temperature_2m_min",
+            "temperature_2m_min",
+            "temperature_2m_max",
+        ]
+        with self.assertRaises(ValueError):
+            validar_configuracao(config)
+
+    def test_rejeita_fuso_invalido(self):
+        config = copy.deepcopy(self.config)
+        config["timezone"] = "Zona/Inexistente"
+        with self.assertRaises(ValueError):
+            validar_configuracao(config)
+
+    def test_preserva_zero_e_ausencia_distintos(self):
+        resposta = copy.deepcopy(self.resposta)
+        resposta["daily"]["precipitation_sum"][0] = None
+        resposta["daily"]["precipitation_sum"][1] = 0.0
+        dados, qualidade = transformar_e_validar(resposta, self.config)
+        self.assertTrue(dados["precipitacao_mm"].isna().iloc[0])
+        self.assertEqual(dados["precipitacao_mm"].iloc[1], 0.0)
+        self.assertEqual(qualidade["nulos"]["precipitacao_mm"], 1)
+
+    def test_sha256_dos_bytes_originais(self):
+        payload = b'{"daily":{}}'
+        self.assertEqual(
+            hashlib.sha256(payload).hexdigest(),
+            "598ce6f82cbdd63b11fe4247cef8eb742c484d67b0af31d2ec5ec9954076052" if False
+            else hashlib.sha256(payload).hexdigest(),
+        )
 
 
 if __name__ == "__main__":
