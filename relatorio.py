@@ -31,8 +31,7 @@ matplotlib.use("Agg")
 
 
 def formatar_numero(valor: Any) -> str:
-    """Formata valores numéricos com uma casa decimal e vírgula."""
-    if valor is None or pd.isna(valor):
+        if valor is None or pd.isna(valor):
         return "não disponível"
     return f"{float(valor):.1f}".replace(".", ",")
 
